@@ -4,16 +4,50 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Authentication;
 
 namespace SSCore
 {
     public delegate void NewClientAcceptHandler(Socket client, object state);
 
+    /// <summary>
+    /// The interface for socket session which requires negotiation before communication
+    /// </summary>
+    interface INegotiateSocketSession
+    {
+        /// <summary>
+        /// Start negotiates
+        /// </summary>
+        void Negotiate();
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="INegotiateSocketSession" /> is result.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if result; otherwise, <c>false</c>.
+        /// </value>
+        bool Result { get; }
+
+
+        /// <summary>
+        /// Gets the app session.
+        /// </summary>
+        /// <value>
+        /// The app session.
+        /// </value>
+        IAppSession AppSession { get; }
+
+        /// <summary>
+        /// Occurs when [negotiate completed].
+        /// </summary>
+        event EventHandler NegotiateCompleted;
+    }
+
     public class SocketServerBase
     {
         protected object SyncRoot = new object();
 
-        //public IAppServer AppServer { get; private set; }
+        public IAppServer AppServer { get; private set; }
 
         public bool IsRunning { get; protected set; }
 
@@ -26,8 +60,6 @@ namespace SSCore
         private BufferManager _bufferManager;
 
         private ConcurrentStack<SocketAsyncEventArgsProxy> _readWritePool;
-
-        public event NewClientAcceptHandler NewClientAccepted;
 
         private Socket _socket
         {
@@ -91,8 +123,8 @@ namespace SSCore
             }
 
             _readWritePool = new ConcurrentStack<SocketAsyncEventArgsProxy>(socketArgsProxyList);
-            
-            _socket.Listen(100);
+
+
 
             _socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
             _socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.DontLinger, true);
@@ -100,10 +132,12 @@ namespace SSCore
             SocketAsyncEventArgs acceptEventArg = new SocketAsyncEventArgs();
             //m_AcceptSAE = acceptEventArg;
             acceptEventArg.Completed += AcceptEventArg_Completed;
+            _socket.Listen(100);
 
             if (!_socket.AcceptAsync(acceptEventArg))
                 ProcessAccept(acceptEventArg);
 
+            IsRunning = true;
             return true;
         }
 
@@ -163,13 +197,141 @@ namespace SSCore
             if (socket != null)
                 OnNewClientAccepted(socket, null);
 
-            //if (!willRaiseEvent)
-            //    ProcessAccept(e);
+            if (!willRaiseEvent)
+                ProcessAccept(e);
         }
 
-        protected virtual void OnNewClientAccepted(Socket socket, object state)
+        protected void OnNewClientAccepted(Socket client, object state)
         {
-            NewClientAccepted?.Invoke(socket, state);
+            if (IsStopped)
+                return;
+
+            ProcessNewClient(client, SslProtocols.None);
+        }
+
+        private IAppSession ProcessNewClient(Socket socket, SslProtocols security)
+        {
+            if (!_readWritePool.TryPop(out SocketAsyncEventArgsProxy result))
+            {
+                AppServer.AsyncRun(() => socket.Shutdown(SocketShutdown.Both));
+                return null;
+            }
+
+
+            ISocketSession socketSession = new AsyncSocketSession(socket, result);
+
+            var session = CreateSession(socket, socketSession);
+
+
+            if (session == null)
+            {
+                result.Reset();
+                this._readWritePool.Push(result);
+                AppServer.AsyncRun(() => socket.Shutdown(SocketShutdown.Both));
+                return null;
+            }
+
+            socketSession.Closed += SessionClosed;
+
+            var negotiateSession = socketSession as INegotiateSocketSession;
+
+            if (negotiateSession == null)
+            {
+                if (RegisterSession(session))
+                {
+                    AppServer.AsyncRun(() => socketSession.Start());
+                }
+
+                return session;
+            }
+
+            negotiateSession.NegotiateCompleted += OnSocketSessionNegotiateCompleted;
+            negotiateSession.Negotiate();
+
+            return null;
+        }
+
+        private void OnSocketSessionNegotiateCompleted(object sender, EventArgs e)
+        {
+            var socketSession = sender as ISocketSession;
+            var negotiateSession = socketSession as INegotiateSocketSession;
+
+            if (!negotiateSession.Result)
+            {
+                socketSession.Close(CloseReason.SocketError);
+                return;
+            }
+
+            if (RegisterSession(negotiateSession.AppSession))
+            {
+                AppServer.AsyncRun(() => socketSession.Start());
+            }
+        }
+
+        void SessionClosed(ISocketSession session, CloseReason reason)
+        {
+            var socketSession = session as IAsyncSocketSessionBase;
+            if (socketSession == null)
+                return;
+
+            var proxy = socketSession.SocketAsyncProxy;
+            proxy.Reset();
+            var args = proxy.SocketEventArgs;
+
+            //var serverState = AppServer.State;
+            var pool = this._readWritePool;
+
+            if (pool == null) // || serverState == ServerState.Stopping || serverState == ServerState.NotStarted)
+            {
+                if (!Environment.HasShutdownStarted)
+                    args.Dispose();
+                return;
+            }
+
+            if (proxy.OrigOffset != args.Offset)
+            {
+                args.SetBuffer(proxy.OrigOffset, 4096);
+            }
+
+            if (!proxy.IsRecyclable)
+            {
+                //cannot be recycled, so release the resource and don't return it to the pool
+                args.Dispose();
+                return;
+            }
+
+            pool.Push(proxy);
+        }
+
+        protected IAppSession CreateSession(Socket client, ISocketSession session)
+        {
+            //if (m_SendTimeOut > 0)
+            client.SendTimeout = 1000;// m_SendTimeOut;
+
+            //if (m_ReceiveBufferSize > 0)
+            client.ReceiveBufferSize = 4096; // m_ReceiveBufferSize;
+
+            //if (m_SendBufferSize > 0)
+            client.SendBufferSize = 4096;// m_SendBufferSize;
+
+            //if (!Platform.SupportSocketIOControlByCodeEnum)
+            //    client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, m_KeepAliveOptionValues);
+            //else
+            //    client.IOControl(IOControlCode.KeepAliveValues, m_KeepAliveOptionValues, m_KeepAliveOptionOutValues);
+
+            client.NoDelay = true;
+            client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.DontLinger, true);
+
+            return this.AppServer.CreateAppSession(session);
+        }
+
+        private bool RegisterSession(IAppSession appSession)
+        {
+            if (AppServer.RegisterSession(appSession))
+                return true;
+
+            appSession.SocketSession.Close(CloseReason.InternalError);
+            return false;
         }
 
 

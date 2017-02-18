@@ -13,14 +13,8 @@ class Program
         };
         SocketServerBase server = new SocketServerBase(config);
 
-        server.NewClientAccepted += Server_NewClientAccepted;
         server.Start();
 
         Console.ReadKey();
-    }
-
-    private static void Server_NewClientAccepted(System.Net.Sockets.Socket client, object state)
-    {
-        Console.WriteLine("got a socket client.");
     }
 }

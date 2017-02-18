@@ -1,0 +1,11 @@
+{
+  "sscore": {
+    "server": {
+      "name": "server name",
+      "server_type": "",
+      "ip": "127.0.0.1",
+      "port": "2020",
+      "max_connect": "1000"
+    }
+  }
+}

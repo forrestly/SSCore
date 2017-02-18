@@ -1,0 +1,17 @@
+C:\Personal\jianshu\SuperSocketCore\TestClient\bin\Debug\netcoreapp1.0\TestClient.deps.json
+C:\Personal\jianshu\SuperSocketCore\TestClient\bin\Debug\netcoreapp1.0\TestClient.runtimeconfig.json
+C:\Personal\jianshu\SuperSocketCore\TestClient\bin\Debug\netcoreapp1.0\TestClient.runtimeconfig.dev.json
+C:\Personal\jianshu\SuperSocketCore\TestClient\bin\Debug\netcoreapp1.0\TestClient.dll
+C:\Personal\jianshu\SuperSocketCore\TestClient\bin\Debug\netcoreapp1.0\TestClient.pdb
+C:\Personal\jianshu\SuperSocketCore\TestClient\obj\Debug\netcoreapp1.0\TestClient.AssemblyInfo.cs
+C:\Personal\jianshu\SuperSocketCore\TestClient\obj\Debug\netcoreapp1.0\TestClient.dll
+C:\Personal\jianshu\SuperSocketCore\TestClient\obj\Debug\netcoreapp1.0\TestClient.pdb
+C:\Personal\jianshu\SSCore\TestClient\bin\Debug\netcoreapp1.0\TestClient.deps.json
+C:\Personal\jianshu\SSCore\TestClient\bin\Debug\netcoreapp1.0\TestClient.runtimeconfig.json
+C:\Personal\jianshu\SSCore\TestClient\bin\Debug\netcoreapp1.0\TestClient.runtimeconfig.dev.json
+C:\Personal\jianshu\SSCore\TestClient\bin\Debug\netcoreapp1.0\TestClient.dll
+C:\Personal\jianshu\SSCore\TestClient\bin\Debug\netcoreapp1.0\TestClient.pdb
+C:\Personal\jianshu\SSCore\TestClient\obj\Debug\netcoreapp1.0\TestClient.csprojResolveAssemblyReference.cache
+C:\Personal\jianshu\SSCore\TestClient\obj\Debug\netcoreapp1.0\TestClient.AssemblyInfo.cs
+C:\Personal\jianshu\SSCore\TestClient\obj\Debug\netcoreapp1.0\TestClient.dll
+C:\Personal\jianshu\SSCore\TestClient\obj\Debug\netcoreapp1.0\TestClient.pdb
