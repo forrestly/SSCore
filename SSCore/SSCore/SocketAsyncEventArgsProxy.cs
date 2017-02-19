@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SSCore
 {
-    class SocketAsyncEventArgsProxy
+    public class SocketAsyncEventArgsProxy
     {
         public SocketAsyncEventArgs SocketEventArgs { get; private set; }
 

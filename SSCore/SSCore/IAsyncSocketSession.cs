@@ -14,14 +14,14 @@ namespace SSCore
         ILog Logger { get; }
     }
 
-    interface IAsyncSocketSessionBase : ILoggerProvider
+    public interface IAsyncSocketSessionBase : ILoggerProvider
     {
         SocketAsyncEventArgsProxy SocketAsyncProxy { get; }
 
         Socket Client { get; }
     }
 
-    interface IAsyncSocketSession : IAsyncSocketSessionBase
+    public interface IAsyncSocketSession : IAsyncSocketSessionBase
     {
         void ProcessReceive(SocketAsyncEventArgs e);
     }

@@ -7,10 +7,14 @@ namespace SSCore.Common
 {
     public class JsonConfigManager
     {
+        private static JsonConfigManager _instance;
         public static JsonConfigManager Instance
         {
-            get;
-            private set;
+            get {
+                if (_instance == null)
+                    _instance = new JsonConfigManager();
+                return _instance;
+            }
         }
 
         private Dictionary<string, string> _configures;
@@ -50,7 +54,6 @@ namespace SSCore.Common
 
         private JsonConfigManager()
         {
-            Instance = new JsonConfigManager();
         }
 
     }

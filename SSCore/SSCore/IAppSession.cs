@@ -29,7 +29,7 @@ namespace SSCore
         /// <summary>
         /// Gets the app server.
         /// </summary>
-        //IAppServer AppServer { get; }
+        IAppServer AppServer { get; }
         /// <summary>
         /// Gets the socket session of the AppSession.
         /// </summary>

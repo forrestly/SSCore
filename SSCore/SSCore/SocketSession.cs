@@ -22,7 +22,7 @@ namespace SSCore
     /// <summary>
     /// Socket Session, all application session should base on this class
     /// </summary>
-    abstract partial class SocketSession : ISocketSession
+    public abstract partial class SocketSession : ISocketSession
     {
         public IAppSession AppSession { get; private set; }
 

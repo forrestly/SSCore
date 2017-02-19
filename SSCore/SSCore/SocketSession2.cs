@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SSCore
 {
-    abstract partial class SocketSession
+    public abstract partial class SocketSession
     {
         private const string m_GeneralErrorMessage = "Unexpected error";
         private const string m_GeneralSocketErrorMessage = "Unexpected socket error: {0}";

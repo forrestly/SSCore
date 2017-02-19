@@ -6841,6 +6841,7 @@
     "C:\\Users\\e877311\\.nuget\\packages\\": {}
   },
   "project": {
+    "version": "1.0.0",
     "restore": {
       "projectUniqueName": "C:\\Personal\\jianshu\\SSCore\\SSCore\\SSCore.Common\\SSCore.Common.csproj",
       "projectName": "SSCore.Common",
@@ -6861,7 +6862,8 @@
         "dependencies": {
           "Microsoft.NETCore.App": {
             "target": "Package",
-            "version": "1.1.0"
+            "version": "1.1.0",
+            "autoReferenced": true
           },
           "Newtonsoft.Json": {
             "target": "Package",

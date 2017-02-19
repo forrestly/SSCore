@@ -8,7 +8,7 @@ using System.Security.Authentication;
 
 namespace SSCore
 {
-    public delegate void NewClientAcceptHandler(Socket client, object state);
+    public delegate void ReadCompletedHandler(Socket client, object state);
 
     /// <summary>
     /// The interface for socket session which requires negotiation before communication
@@ -55,6 +55,8 @@ namespace SSCore
 
         //protected List<ISocketListener> Listeners { get; private set; }
 
+        public event ReadCompletedHandler ReadCompleted;
+
         protected bool IsStopped { get; set; }
 
         private BufferManager _bufferManager;
@@ -67,18 +69,18 @@ namespace SSCore
             set;
         }
 
-        public SocketServerBase(Dictionary<string, string> config)
+        public SocketServerBase()
         {
+            Dictionary<string, string> config = JsonConfigManager.Instance.Configures;
             if (config == null)
                 throw new ArgumentNullException();
             if (_socket != null)
                 throw new Exception("socket server exists.");
 
-
             try
             {
                 _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                _socket.Bind(new IPEndPoint(IPAddress.Any, int.Parse(config["port"])));
+                _socket.Bind(new IPEndPoint(IPAddress.TryParse(config["ip"], out IPAddress address) ? address : IPAddress.Any, int.Parse(config["port"])));
             }
             catch (Exception ex)
             {
@@ -217,38 +219,51 @@ namespace SSCore
                 return null;
             }
 
+            result.SocketEventArgs.Completed += SocketEventArgs_Completed;
 
             ISocketSession socketSession = new AsyncSocketSession(socket, result);
 
-            var session = CreateSession(socket, socketSession);
+            socketSession.Initialize(null);
+
+            socketSession.Start();
 
 
-            if (session == null)
-            {
-                result.Reset();
-                this._readWritePool.Push(result);
-                AppServer.AsyncRun(() => socket.Shutdown(SocketShutdown.Both));
-                return null;
-            }
+            //var session = CreateSession(socket, socketSession);
+
+
+            //if (session == null)
+            //{
+            //    result.Reset();
+            //    this._readWritePool.Push(result);
+            //    AppServer.AsyncRun(() => socket.Shutdown(SocketShutdown.Both));
+            //    return null;
+            //}
 
             socketSession.Closed += SessionClosed;
 
-            var negotiateSession = socketSession as INegotiateSocketSession;
+            //var negotiateSession = socketSession as INegotiateSocketSession;
 
-            if (negotiateSession == null)
-            {
-                if (RegisterSession(session))
-                {
-                    AppServer.AsyncRun(() => socketSession.Start());
-                }
+            //if (negotiateSession == null)
+            //{
+            //    if (RegisterSession(session))
+            //    {
+            //        AppServer.AsyncRun(() => socketSession.Start());
+            //    }
 
-                return session;
-            }
+            //    return session;
+            //}
 
-            negotiateSession.NegotiateCompleted += OnSocketSessionNegotiateCompleted;
-            negotiateSession.Negotiate();
+            //negotiateSession.NegotiateCompleted += OnSocketSessionNegotiateCompleted;
+            //negotiateSession.Negotiate();
 
             return null;
+        }
+
+        private void SocketEventArgs_Completed(object sender, SocketAsyncEventArgs e)
+        {
+            if (e.LastOperation == SocketAsyncOperation.Receive)
+                ReadCompleted?.Invoke(sender as Socket, e);
+            //e.LastOperation
         }
 
         private void OnSocketSessionNegotiateCompleted(object sender, EventArgs e)

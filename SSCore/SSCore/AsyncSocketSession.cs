@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace SSCore
 {
-    class AsyncSocketSession : SocketSession, IAsyncSocketSession
+    public class AsyncSocketSession : SocketSession, IAsyncSocketSession
     {
         private bool m_IsReset;
 
@@ -51,8 +51,8 @@ namespace SSCore
         {
             StartReceive(SocketAsyncProxy.SocketEventArgs);
 
-            if (!m_IsReset)
-                StartSession();
+            //if (!m_IsReset)
+            //    StartSession();
         }
 
         bool ProcessCompleted(SocketAsyncEventArgs e)
@@ -88,7 +88,7 @@ namespace SSCore
             if (count != e.BytesTransferred)
             {
                 queue.InternalTrim(e.BytesTransferred);
-                AppSession.Logger.InfoFormat("{0} of {1} were transferred, send the rest {2} bytes right now.", e.BytesTransferred, count, queue.Sum(q => q.Count));
+                //AppSession.Logger.InfoFormat("{0} of {1} were transferred, send the rest {2} bytes right now.", e.BytesTransferred, count, queue.Sum(q => q.Count));
                 ClearPrevSendState(e);
                 SendAsync(queue);
                 return;
@@ -178,6 +178,35 @@ namespace SSCore
                 OnSendError(queue, CloseReason.SocketError);
                 return;
             }
+        }
+
+        /// <summary>
+        /// Sends the message to client.
+        /// </summary>
+        /// <param name="message">The message which will be sent.</param>
+        public virtual void Send(string message)
+        {
+            var data = System.Text.Encoding.UTF8.GetBytes(message);
+            Send(data, 0, data.Length);
+        }
+
+        /// <summary>
+        /// Sends the data to client.
+        /// </summary>
+        /// <param name="data">The data which will be sent.</param>
+        /// <param name="offset">The offset.</param>
+        /// <param name="length">The length.</param>
+        public virtual void Send(byte[] data, int offset, int length)
+        {
+            InternalTrySend(new ArraySegment<byte>(data, offset, length));
+        }
+
+        private bool InternalTrySend(ArraySegment<byte> segment)
+        {
+            if (!this.TrySend(segment))
+                return false;
+
+            return true;
         }
 
         protected override void SendAsync(SendingQueue queue)
