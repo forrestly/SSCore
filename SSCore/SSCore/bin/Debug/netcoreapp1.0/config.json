@@ -1,7 +1,0 @@
-{
-  "name": "server name",
-  "server_type": "",
-  "ip": "any",
-  "port": "2020",
-  "max_connect": "1000"
-}
