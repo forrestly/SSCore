@@ -109,10 +109,8 @@ namespace SSCore
         public SocketSession(Socket client)
             : this(Guid.NewGuid().ToString())
         {
-            if (client == null)
-                throw new ArgumentNullException("client");
+            m_Client = client ?? throw new ArgumentNullException("client");
 
-            m_Client = client;
             LocalEndPoint = (IPEndPoint)client.LocalEndPoint;
             RemoteEndPoint = (IPEndPoint)client.RemoteEndPoint;
         }

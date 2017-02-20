@@ -307,6 +307,7 @@ namespace SSCore
                 return;
 
             var proxy = socketSession.SocketAsyncProxy;
+            proxy.SocketEventArgs.Completed -= SocketEventArgs_Completed;
             proxy.Reset();
             var args = proxy.SocketEventArgs;
 

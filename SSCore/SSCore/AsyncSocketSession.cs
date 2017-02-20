@@ -255,18 +255,18 @@ namespace SSCore
 
             OnReceiveEnded();
 
-            int offsetDelta;
+            int offsetDelta = 0;
 
-            try
-            {
-                offsetDelta = this.AppSession.ProcessRequest(e.Buffer, e.Offset, e.BytesTransferred, true);
-            }
-            catch (Exception exc)
-            {
-                LogError("Protocol error", exc);
-                this.Close(CloseReason.ProtocolError);
-                return;
-            }
+            //try
+            //{
+            //    offsetDelta = this.AppSession.ProcessRequest(e.Buffer, e.Offset, e.BytesTransferred, true);
+            //}
+            //catch (Exception exc)
+            //{
+            //    LogError("Protocol error", exc);
+            //    this.Close(CloseReason.ProtocolError);
+            //    return;
+            //}
 
             //read the next block of data sent from the client
             StartReceive(e, offsetDelta);
