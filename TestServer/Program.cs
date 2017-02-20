@@ -25,6 +25,8 @@ class Program
 
         AsyncSocketSession session = arg.UserToken as AsyncSocketSession;
 
-        session.Send("received.");
+        if (session == null)
+            return;
+        session.Send(received);
     }
 }

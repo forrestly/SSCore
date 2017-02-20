@@ -203,7 +203,7 @@ namespace SSCore
 
         private bool InternalTrySend(ArraySegment<byte> segment)
         {
-            if (!this.TrySend(segment))
+            if (!TrySend(segment))
                 return false;
 
             return true;

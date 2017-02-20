@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-namespace SSCore
+namespace SSCore.Common
 {
     /// <summary>
     /// The pool information class

@@ -55,6 +55,14 @@ namespace SSCore
 
         //protected List<ISocketListener> Listeners { get; private set; }
 
+        /// <summary>
+        /// Gets the sending queue manager.
+        /// </summary>
+        /// <value>
+        /// The sending queue manager.
+        /// </value>
+        internal ISmartPool<SendingQueue> SendingQueuePool { get; private set; }
+
         public event ReadCompletedHandler ReadCompleted;
 
         protected bool IsStopped { get; set; }
@@ -109,6 +117,13 @@ namespace SSCore
                 //AppServer.Logger.Error("Failed to allocate buffer for async socket communication, may because there is no enough memory, please decrease maxConnectionNumber in configuration!", e);
                 //return false;
             }
+
+            var sendingQueuePool = new SmartPool<SendingQueue>();
+            sendingQueuePool.Initialize(Math.Max(maxConnection / 6, 256),
+                    Math.Max(maxConnection * 2, 256),
+                    new SendingQueueSourceCreator(5));
+
+            SendingQueuePool = sendingQueuePool;
 
             // preallocate pool of SocketAsyncEventArgs objects
             SocketAsyncEventArgs socketEventArg;
@@ -222,6 +237,8 @@ namespace SSCore
             result.SocketEventArgs.Completed += SocketEventArgs_Completed;
 
             ISocketSession socketSession = new AsyncSocketSession(socket, result);
+
+            socketSession.InitializeSendingQueue(this.SendingQueuePool);
 
             socketSession.Initialize(null);
 

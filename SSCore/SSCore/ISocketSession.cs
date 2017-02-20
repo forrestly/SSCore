@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SSCore.Common;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -68,6 +69,8 @@ namespace SSCore
         /// </summary>
         /// <param name="appSession">The app session.</param>
         void Initialize(IAppSession appSession);
+
+        void InitializeSendingQueue(ISmartPool<SendingQueue> pool);
 
         /// <summary>
         /// Starts this instance.

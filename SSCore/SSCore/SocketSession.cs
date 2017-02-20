@@ -125,6 +125,13 @@ namespace SSCore
         public virtual void Initialize(IAppSession appSession)
         {
             AppSession = appSession;
+
+            SendingQueue queue;
+            if (m_SendingQueuePool.TryGet(out queue))
+            {
+                m_SendingQueue = queue;
+                queue.StartEnqueue();
+            }
             //Config = appSession.Config;
             //SyncSend = Config.SyncSend;
 
@@ -137,6 +144,11 @@ namespace SSCore
             //    m_SendingQueue = queue;
             //    queue.StartEnqueue();
             //}
+        }
+
+        public void InitializeSendingQueue(ISmartPool<SendingQueue> pool)
+        {
+            m_SendingQueuePool = pool;
         }
 
         /// <summary>
