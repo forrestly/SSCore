@@ -17,6 +17,7 @@ class Program
 
     private static void Server_ReadCompleted(Socket client, object state)
     {
+        Console.WriteLine("-----hit start ------------");
         SocketAsyncEventArgs arg = state as SocketAsyncEventArgs;
 
         string received = System.Text.Encoding.UTF8.GetString(arg.Buffer, arg.Offset, arg.BytesTransferred);
@@ -26,7 +27,11 @@ class Program
         AsyncSocketSession session = arg.UserToken as AsyncSocketSession;
 
         if (session == null)
+        {
+            Console.WriteLine("session is null");
             return;
+        }
+
         session.Send(received);
     }
 }

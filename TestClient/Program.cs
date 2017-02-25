@@ -23,13 +23,15 @@ class Program
         }
         while (true)
         {
-            if (!client.Connected)
-            {
-                client.Dispose();
-                client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                client.Connect("127.0.0.1", 2020);
-            }
-
+            //try
+            //{
+            //    client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            //    client.Connect("127.0.0.1", 2020);
+            //}
+            //catch (Exception ex)
+            //{
+            //    throw ex;
+            //}
 
             try
             {
@@ -56,6 +58,19 @@ class Program
 
             if (key.KeyChar.Equals('q'))
                 break;
+
+            Console.WriteLine("any key to continue, press q to exit.");
+            //try
+            //{
+            //    Console.WriteLine("---Close Client.---");
+            //    client.Shutdown(SocketShutdown.Both);
+            //    client.Dispose();
+            //}
+            //catch (Exception)
+            //{
+            //    Console.WriteLine("Shundown Error");
+            //}
+
         }
     }
 }
