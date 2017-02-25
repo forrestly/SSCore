@@ -14,6 +14,13 @@ namespace SSCore
 
         private SocketAsyncEventArgs m_SocketEventArgSend;
 
+        private Action<SocketAsyncEventArgs> _receiveCallback;
+
+        public void SetReceiveHandler(Action<SocketAsyncEventArgs> handler)
+        {
+            _receiveCallback = handler;
+        }
+
         public AsyncSocketSession(Socket client, SocketAsyncEventArgsProxy socketAsyncProxy)
             : this(client, socketAsyncProxy, false)
         {
@@ -256,6 +263,8 @@ namespace SSCore
             OnReceiveEnded();
 
             int offsetDelta = 0;
+
+            _receiveCallback(e);
 
             //try
             //{

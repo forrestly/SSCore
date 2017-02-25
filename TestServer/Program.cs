@@ -8,30 +8,25 @@ class Program
     static void Main(string[] args)
     {
         SocketServerBase server = new SocketServerBase();
-        server.ReadCompleted += Server_ReadCompleted;
+        server.NewClientAccepted += Server_NewClientAccepted;
         server.Start();
 
         Console.WriteLine("enter any key to exit.");
         Console.ReadKey();
     }
 
-    private static void Server_ReadCompleted(Socket client, object state)
+    private static void Server_NewClientAccepted(Socket client, ISocketSession session)
     {
-        Console.WriteLine("-----hit start ------------");
-        SocketAsyncEventArgs arg = state as SocketAsyncEventArgs;
+        Console.WriteLine("----- new client ------------");
+        AsyncSocketSession ass = session as AsyncSocketSession;
 
-        string received = System.Text.Encoding.UTF8.GetString(arg.Buffer, arg.Offset, arg.BytesTransferred);
-
-        Console.WriteLine(received);
-
-        AsyncSocketSession session = arg.UserToken as AsyncSocketSession;
-
-        if (session == null)
+        ass.SetReceiveHandler(arg =>
         {
-            Console.WriteLine("session is null");
-            return;
-        }
+            Console.WriteLine("----- new receive ------------");
+            string received = System.Text.Encoding.UTF8.GetString(arg.Buffer, arg.Offset, arg.BytesTransferred);
+            Console.WriteLine(received);
 
-        session.Send(received);
+            ass.Send(received);
+        });
     }
 }

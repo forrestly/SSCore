@@ -8,7 +8,7 @@ using System.Security.Authentication;
 
 namespace SSCore
 {
-    public delegate void ReadCompletedHandler(Socket client, object state);
+    public delegate void NewSessionHandler(Socket client, ISocketSession session);
 
     /// <summary>
     /// The interface for socket session which requires negotiation before communication
@@ -63,7 +63,7 @@ namespace SSCore
         /// </value>
         internal ISmartPool<SendingQueue> SendingQueuePool { get; private set; }
 
-        public event ReadCompletedHandler ReadCompleted;
+        public event NewSessionHandler NewClientAccepted;
 
         protected bool IsStopped { get; set; }
 
@@ -234,8 +234,6 @@ namespace SSCore
                 return null;
             }
 
-            result.SocketEventArgs.Completed += SocketEventArgs_Completed;
-
             ISocketSession socketSession = new AsyncSocketSession(socket, result);
 
             socketSession.InitializeSendingQueue(this.SendingQueuePool);
@@ -273,14 +271,8 @@ namespace SSCore
             //negotiateSession.NegotiateCompleted += OnSocketSessionNegotiateCompleted;
             //negotiateSession.Negotiate();
 
+            NewClientAccepted(socket, socketSession);
             return null;
-        }
-
-        private void SocketEventArgs_Completed(object sender, SocketAsyncEventArgs e)
-        {
-            if (e.LastOperation == SocketAsyncOperation.Receive)
-                ReadCompleted?.Invoke(sender as Socket, e);
-            //e.LastOperation
         }
 
         private void OnSocketSessionNegotiateCompleted(object sender, EventArgs e)
@@ -307,7 +299,6 @@ namespace SSCore
                 return;
 
             var proxy = socketSession.SocketAsyncProxy;
-            proxy.SocketEventArgs.Completed -= SocketEventArgs_Completed;
             proxy.Reset();
             var args = proxy.SocketEventArgs;
 
